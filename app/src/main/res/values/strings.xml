@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CustomMapLayers</string>
+    <string name="from_file">Draw from file</string>
+    <string name="get_from_server">Get from server</string>
+</resources>
