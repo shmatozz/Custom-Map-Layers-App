@@ -11,6 +11,8 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import com.google.maps.android.data.geojson.GeoJsonLayer
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -21,6 +23,7 @@ import java.io.InputStreamReader
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mapView: GoogleMap
+    private lateinit var currentLayerDisplayed: GeoJsonLayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +38,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         drawFromFileButton.setOnClickListener {
             getFromGeoJSON()
         }
+
+        getFromServerButton.setOnClickListener {
+            getFromServer()
+        }
     }
 
     override fun onMapReady(map: GoogleMap) {
@@ -45,27 +52,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val geoJSON = getJSONFromRawResource(applicationContext, R.raw.hse_cords)
 
         // put info from JSON
-        val layer = GeoJsonLayer(mapView, geoJSON)
-        layer.addLayerToMap()
-
-        // zoom map
-        if (geoJSON.has("properties")) {
-            val properties = geoJSON.getJSONObject("properties")
-            if (properties.has("bbox")) {
-                val bboxArray = properties.getJSONArray("bbox")
-
-                val west = bboxArray.getDouble(0)
-                val south = bboxArray.getDouble(1)
-                val east = bboxArray.getDouble(2)
-                val north = bboxArray.getDouble(3)
-
-                val southwest = LatLng(south, west)
-                val northeast = LatLng(north, east)
-                val bounds = LatLngBounds(southwest, northeast)
-
-                mapView.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
-            }
-        }
+        putLayerOnMap(geoJSON)
     }
 
     private fun getJSONFromRawResource(context: Context, resourceId: Int): JSONObject {
@@ -86,5 +73,52 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         return JSONObject(stringBuilder.toString())
+    }
+
+    private fun getFromServer() {
+        val db = Firebase.firestore
+        val docRef = db.collection("geofiles").document("B1HY2BXZkYxrgu51quOa")
+        docRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    Log.d("custom", "DocumentSnapshot data: ${document.data}")
+                    if (document.data != null) {
+                        putLayerOnMap(JSONObject(document.data!!))
+                    } else {
+                        Log.d("custom", "Document data is null")
+                    }
+                } else {
+                    Log.d("custom", "No such document")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("custom", "get failed with ", exception)
+            }
+    }
+
+    private fun putLayerOnMap(geoJSONObject: JSONObject) {
+        mapView.clear()
+
+        currentLayerDisplayed = GeoJsonLayer(mapView, geoJSONObject)
+        currentLayerDisplayed.addLayerToMap()
+
+        // zoom map
+        if (geoJSONObject.has("properties")) {
+            val properties = geoJSONObject.getJSONObject("properties")
+            if (properties.has("bbox")) {
+                val bboxArray = properties.getJSONArray("bbox")
+
+                val west = bboxArray.getDouble(0)
+                val south = bboxArray.getDouble(1)
+                val east = bboxArray.getDouble(2)
+                val north = bboxArray.getDouble(3)
+
+                val southwest = LatLng(south, west)
+                val northeast = LatLng(north, east)
+                val bounds = LatLngBounds(southwest, northeast)
+
+                mapView.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+            }
+        }
     }
 }
