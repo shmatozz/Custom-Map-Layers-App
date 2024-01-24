@@ -15,6 +15,8 @@ class DataProvider {
         val docRef = db.collection("geofiles").document("B1HY2BXZkYxrgu51quOa")
         var geoJSONObject = JSONObject()
 
+
+        /* TODO fix returning earlier than receiving result from base*/
         docRef.get()
             .addOnSuccessListener { document ->
                 if (document != null) {

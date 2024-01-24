@@ -1,46 +1,77 @@
 package com.example.custommaplayers
 
 import android.os.Bundle
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import com.example.custommaplayers.data.DataProvider
+import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.data.geojson.GeoJsonLayer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : ComponentActivity() {
 
-    private lateinit var mapView: GoogleMap
+    private lateinit var map: GoogleMap
     private lateinit var currentLayerDisplayed: GeoJsonLayer
     private val dataProvider = DataProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_map)
 
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.mapView) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        setContent {
+            CustomMapLayersTheme {
+                val mapView = rememberMapViewLifecycle()
 
-        val drawFromFileButton = findViewById<Button>(R.id.draw_from_file_btn)
-        val getFromServerButton = findViewById<Button>(R.id.get_from_server_btn)
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxSize()
+                        .background(
+                            color = MaterialTheme.colorScheme.background,
+                        )
+                ) {
+                    AndroidView(
+                        { mapView },
+                        modifier = Modifier.fillMaxHeight(0.9f)
+                    ) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            mapView.getMapAsync {
+                                map = it
+                                map.uiSettings.isZoomControlsEnabled = true
+                            }
+                        }
+                    }
 
-        drawFromFileButton.setOnClickListener {
-            getFromJSONFile()
+                    Row {
+                        Button(onClick = {  getFromJSONFile() }) {
+                            Text(text = "File")
+                        }
+
+                        Button(onClick = { getFromServer() }) {
+                            Text(text = "Server")
+                        }
+                    }
+                }
+            }
         }
-
-        getFromServerButton.setOnClickListener {
-            getFromServer()
-        }
-    }
-
-    override fun onMapReady(map: GoogleMap) {
-        mapView = map
     }
 
     private fun getFromJSONFile() {
@@ -56,9 +87,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun putLayerOnMap(geoJSONObject: JSONObject) {
-        mapView.clear()
+        map.clear()
 
-        currentLayerDisplayed = GeoJsonLayer(mapView, geoJSONObject)
+        Log.d("custom", geoJSONObject.toString())
+
+        currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
         currentLayerDisplayed.addLayerToMap()
 
         // zoom map
@@ -74,7 +107,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 val bounds = LatLngBounds(LatLng(south, west), LatLng(north, east))
 
-                mapView.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+                map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
             }
         }
     }
