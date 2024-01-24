@@ -3,4 +3,5 @@
     <string name="app_name">CustomMapLayers</string>
     <string name="from_file">Получить из файла</string>
     <string name="get_from_server">Загрузить с сервера</string>
+    <string name="cords_available">Сейчас доступно на сервере</string>
 </resources>
