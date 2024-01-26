@@ -1,4 +1,4 @@
-package com.example.custommaplayers
+package com.example.custommaplayers.ui.main
 
 import android.os.Bundle
 import androidx.compose.runtime.Composable
@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.example.custommaplayers.R
 import com.google.android.gms.maps.MapView
 
 @Composable

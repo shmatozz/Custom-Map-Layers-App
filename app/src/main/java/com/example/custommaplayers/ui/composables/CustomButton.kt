@@ -1,10 +1,8 @@
-package com.example.custommaplayers.ui
+package com.example.custommaplayers.ui.composables
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
