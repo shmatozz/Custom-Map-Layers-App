@@ -5,16 +5,22 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.custommaplayers.data.DataProvider
+import com.example.custommaplayers.ui.CustomButton
 import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -50,7 +56,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     AndroidView(
                         { mapView },
-                        modifier = Modifier.fillMaxHeight(0.9f)
+                        modifier = Modifier.fillMaxHeight(0.92f)
                     ) {
                         CoroutineScope(Dispatchers.Main).launch {
                             mapView.getMapAsync {
@@ -60,13 +66,21 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    Row {
-                        Button(onClick = {  getFromJSONFile() }) {
-                            Text(text = "File")
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        CustomButton(modifier = Modifier.weight(1f), text = getString(R.string.get_from_server)) {
+                            getFromServer()
                         }
+                        
+                        Spacer(modifier = Modifier.weight(0.01f))
 
-                        Button(onClick = { getFromServer() }) {
-                            Text(text = "Server")
+                        CustomButton(modifier = Modifier.weight(1f), text = getString(R.string.from_file)) {
+                            getFromJSONFile()
                         }
                     }
                 }
