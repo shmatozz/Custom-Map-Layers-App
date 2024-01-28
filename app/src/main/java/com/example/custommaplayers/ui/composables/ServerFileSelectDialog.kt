@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -28,15 +29,14 @@ fun ServerFileSelectDialog(
     title: String,
     availableFilesList: List<String>,
     onDismissRequest: () -> Unit,
-    onFileSelected: () -> Unit
+    onFileSelected: (String) -> Unit
 ) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
         // Draw a rectangle shape with rounded corners inside the dialog
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(500.dp)
-                .padding(16.dp),
+                .height(500.dp),
             shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.cardColors(Color.White),
             border = BorderStroke(2.dp, Color.Black)
@@ -51,8 +51,8 @@ fun ServerFileSelectDialog(
                 Text(
                     text = title,
                     modifier = Modifier
-                        .weight(0.1f)
-                        .fillMaxSize(),
+                        .wrapContentHeight()
+                        .padding(8.dp),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -66,7 +66,7 @@ fun ServerFileSelectDialog(
                         items = availableFilesList,
                     ) {
                         ListItem(text = it) {
-                            onFileSelected()
+                            onFileSelected(it)
                         }
                     }
                 }
