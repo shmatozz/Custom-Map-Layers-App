@@ -10,31 +10,33 @@ import java.io.InputStream
 import java.io.InputStreamReader
 
 class DataProvider {
-    fun getFromServer() : JSONObject {
+     fun getFromServer(
+         objectID: String,
+         putLayerOnMap: (JSONObject) -> Unit
+     ) {
         val db = Firebase.firestore
-        val docRef = db.collection("geofiles").document("B1HY2BXZkYxrgu51quOa")
+        val docRef = db.collection("geofiles").document(objectID).get()
         var geoJSONObject = JSONObject()
 
-
-        /* TODO fix returning earlier than receiving result from base*/
-        docRef.get()
+        docRef
             .addOnSuccessListener { document ->
                 if (document != null) {
                     if (document.data != null) {
-                        Log.d("custom", "DocumentSnapshot data: ${document.data}")
+                        Log.d("working", "DocumentSnapshot data: ${document.data}")
                         geoJSONObject = JSONObject(document.data!!)
                     } else {
-                        Log.d("custom", "Document data is null")
+                        Log.d("working", "Document data is null")
                     }
                 } else {
-                    Log.d("custom", "No such document")
+                    Log.d("working", "No such document")
                 }
             }
             .addOnFailureListener { exception ->
-                Log.d("custom", "get failed with ", exception)
+                Log.d("working", "get failed with ", exception)
             }
-
-        return geoJSONObject
+            .addOnCompleteListener {
+                putLayerOnMap(geoJSONObject)
+            }
     }
 
     fun getJSONFromRawResource(context: Context, resourceId: Int): JSONObject {
@@ -55,5 +57,25 @@ class DataProvider {
         }
 
         return JSONObject(stringBuilder.toString())
+    }
+
+    fun getObjectListFromServer() : List<String> {
+        val db = Firebase.firestore
+        val collectionRef = db.collection("geofiles").get()
+        val objects = mutableListOf<String>()
+
+        collectionRef
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    Log.d("working", "${document.id} => ${document.data}")
+                    objects.add(document.id)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("working", "Error getting documents: ", exception)
+            }
+
+        Log.d("working", objects.toString())
+        return objects
     }
 }

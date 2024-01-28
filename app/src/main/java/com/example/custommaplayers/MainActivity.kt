@@ -28,8 +28,9 @@ class MainActivity : ComponentActivity() {
             CustomMapLayersTheme {
                 MapScreen(
                     context = applicationContext,
-                    getFromServer = { getFromServer() },
-                    getFromJSONFile = { getFromJSONFile() }
+                    getFromServer = { getFromServer(it) },
+                    getFromJSONFile = { getFromJSONFile() },
+                    getObjectList = { getObjectsListFromServer() },
                 ) {
                     map = it
                     map.uiSettings.isZoomControlsEnabled = true
@@ -44,16 +45,20 @@ class MainActivity : ComponentActivity() {
         putLayerOnMap(geoJSON)
     }
 
-    private fun getFromServer() {
-        val geoJSONObject = dataProvider.getFromServer()
+    private fun getObjectsListFromServer(): List<String> {
+        return dataProvider.getObjectListFromServer()
+    }
 
-        putLayerOnMap(geoJSONObject)
+    private fun getFromServer(objectID: String) {
+        dataProvider.getFromServer(objectID) {
+            putLayerOnMap(it)
+        }
     }
 
     private fun putLayerOnMap(geoJSONObject: JSONObject) {
         map.clear()
 
-        Log.d("custom", geoJSONObject.toString())
+        Log.d("working", "putLayerOnMap $geoJSONObject")
 
         currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
         currentLayerDisplayed.addLayerToMap()
