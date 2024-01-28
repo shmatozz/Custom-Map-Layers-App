@@ -1,46 +1,42 @@
 package com.example.custommaplayers
 
 import android.os.Bundle
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import com.example.custommaplayers.data.DataProvider
+import com.example.custommaplayers.ui.main.MapScreen
+import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.data.geojson.GeoJsonLayer
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : ComponentActivity() {
 
-    private lateinit var mapView: GoogleMap
+    private lateinit var map: GoogleMap
     private lateinit var currentLayerDisplayed: GeoJsonLayer
     private val dataProvider = DataProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_map)
 
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.mapView) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
-        val drawFromFileButton = findViewById<Button>(R.id.draw_from_file_btn)
-        val getFromServerButton = findViewById<Button>(R.id.get_from_server_btn)
-
-        drawFromFileButton.setOnClickListener {
-            getFromJSONFile()
+        setContent {
+            CustomMapLayersTheme {
+                MapScreen(
+                    context = applicationContext,
+                    getFromServer = { getFromServer(it) },
+                    getFromJSONFile = { getFromJSONFile() },
+                    getObjectList = { getObjectsListFromServer() },
+                ) {
+                    map = it
+                    map.uiSettings.isZoomControlsEnabled = true
+                }
+            }
         }
-
-        getFromServerButton.setOnClickListener {
-            getFromServer()
-        }
-    }
-
-    override fun onMapReady(map: GoogleMap) {
-        mapView = map
     }
 
     private fun getFromJSONFile() {
@@ -49,16 +45,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         putLayerOnMap(geoJSON)
     }
 
-    private fun getFromServer() {
-        val geoJSONObject = dataProvider.getFromServer()
+    private fun getObjectsListFromServer(): List<String> {
+        return dataProvider.getObjectListFromServer()
+    }
 
-        putLayerOnMap(geoJSONObject)
+    private fun getFromServer(objectID: String) {
+        dataProvider.getFromServer(objectID) {
+            putLayerOnMap(it)
+        }
     }
 
     private fun putLayerOnMap(geoJSONObject: JSONObject) {
-        mapView.clear()
+        map.clear()
 
-        currentLayerDisplayed = GeoJsonLayer(mapView, geoJSONObject)
+        Log.d("working", "putLayerOnMap $geoJSONObject")
+
+        currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
         currentLayerDisplayed.addLayerToMap()
 
         // zoom map
@@ -74,7 +76,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 val bounds = LatLngBounds(LatLng(south, west), LatLng(north, east))
 
-                mapView.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+                map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
             }
         }
     }
