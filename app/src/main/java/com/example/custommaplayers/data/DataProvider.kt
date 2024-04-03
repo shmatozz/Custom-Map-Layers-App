@@ -4,10 +4,13 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import com.google.gson.JsonArray
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
+import kotlin.reflect.typeOf
 
 class DataProvider {
      fun getFromServer(
@@ -23,7 +26,18 @@ class DataProvider {
                 if (document != null) {
                     if (document.data != null) {
                         Log.d("working", "DocumentSnapshot data: ${document.data}")
-                        geoJSONObject = JSONObject(document.data!!)
+                        // TODO: FIX POLYGON
+                        val data = JSONObject(document.data!!)
+                        val coordinates = mutableListOf<List<Double>>()
+                        val parts = data.getJSONObject("geometry").getString("coordinates").split(",")
+                        for (i in parts.indices step 2) {
+                            val x = parts[i].toDouble()
+                            val y = parts[i + 1].toDouble()
+                            coordinates.add(listOf(y, x))
+                        }
+                        data.getJSONObject("geometry").put("coordinates", JSONArray(coordinates))
+                        Log.d("working", "data $data")
+                        geoJSONObject = data
                     } else {
                         Log.d("working", "Document data is null")
                     }

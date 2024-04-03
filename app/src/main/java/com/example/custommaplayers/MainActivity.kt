@@ -60,6 +60,13 @@ class MainActivity : ComponentActivity() {
 
         Log.d("working", "putLayerOnMap $geoJSONObject")
 
+        try {
+            currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
+            Log.d("working", currentLayerDisplayed.toString())
+
+        } catch (error: Exception) {
+            Log.d("working", error.toString())
+        }
         currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
         currentLayerDisplayed.addLayerToMap()
 
