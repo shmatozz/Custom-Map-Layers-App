@@ -4,13 +4,11 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-import com.google.gson.JsonArray
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
-import kotlin.reflect.typeOf
 
 class DataProvider {
      fun getFromServer(
@@ -26,8 +24,10 @@ class DataProvider {
                 if (document != null) {
                     if (document.data != null) {
                         Log.d("working", "DocumentSnapshot data: ${document.data}")
-                        // TODO: FIX POLYGON
+                        /* Get data */
                         val data = JSONObject(document.data!!)
+
+                        /* Parse coordinates from string to array */
                         val coordinates = mutableListOf<List<Double>>()
                         val parts = data.getJSONObject("geometry").getString("coordinates").split(",")
                         for (i in parts.indices step 2) {
@@ -35,7 +35,15 @@ class DataProvider {
                             val y = parts[i + 1].toDouble()
                             coordinates.add(listOf(y, x))
                         }
-                        data.getJSONObject("geometry").put("coordinates", JSONArray(coordinates))
+
+                        /* Check geometry type, if "Polygon" -> add one more array layer */
+                        if (data.getJSONObject("geometry").getString("type") == "Polygon") {
+                            data.getJSONObject("geometry").put("coordinates", JSONArray(mutableListOf(coordinates)))
+                        } else {
+                            data.getJSONObject("geometry").put("coordinates", JSONArray(coordinates))
+                        }
+
+                        /* Save data */
                         Log.d("working", "data $data")
                         geoJSONObject = data
                     } else {
@@ -49,6 +57,7 @@ class DataProvider {
                 Log.d("working", "get failed with ", exception)
             }
             .addOnCompleteListener {
+                /* If no errors -> put layer on map */
                 putLayerOnMap(geoJSONObject)
             }
     }
