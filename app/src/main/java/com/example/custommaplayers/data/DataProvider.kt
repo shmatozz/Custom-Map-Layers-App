@@ -4,6 +4,9 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -82,23 +85,16 @@ class DataProvider {
         return JSONObject(stringBuilder.toString())
     }
 
-    fun getObjectListFromServer() : List<String> {
+    suspend fun getObjectListFromServer(): List<String> = withContext(Dispatchers.IO) {
         val db = Firebase.firestore
-        val collectionRef = db.collection("geofiles").get()
+        val collectionRef = db.collection("geofiles").get().await()
         val objects = mutableListOf<String>()
 
-        collectionRef
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    Log.d("working", "${document.id} => ${document.data}")
-                    objects.add(document.id)
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.d("working", "Error getting documents: ", exception)
-            }
+        for (document in collectionRef) {
+            Log.d("working", document.data.toString())
+            objects.add(document.id)
+        }
 
-        Log.d("working", objects.toString())
-        return objects
+        return@withContext objects
     }
 }

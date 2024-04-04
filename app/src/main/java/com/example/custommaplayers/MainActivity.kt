@@ -4,6 +4,10 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.example.custommaplayers.data.DataProvider
 import com.example.custommaplayers.ui.main.MapScreen
 import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
@@ -12,6 +16,10 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.data.geojson.GeoJsonLayer
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 
@@ -25,12 +33,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            var objectsList by remember { mutableStateOf(emptyList<String>()) }
+
             CustomMapLayersTheme {
                 MapScreen(
                     context = applicationContext,
                     getFromServer = { getFromServer(it) },
                     getFromJSONFile = { getFromJSONFile() },
-                    getObjectList = { getObjectsListFromServer() },
+                    dataProvider = dataProvider,
                 ) {
                     map = it
                     map.uiSettings.isZoomControlsEnabled = true
@@ -45,8 +55,12 @@ class MainActivity : ComponentActivity() {
         putLayerOnMap(geoJSON)
     }
 
-    private fun getObjectsListFromServer(): List<String> {
-        return dataProvider.getObjectListFromServer()
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun getObjectsListFromServer(callback: (List<String>) -> Unit) {
+        GlobalScope.launch(Dispatchers.Main) {
+            val objectsList = dataProvider.getObjectListFromServer()
+            callback(objectsList)
+        }
     }
 
     private fun getFromServer(objectID: String) {

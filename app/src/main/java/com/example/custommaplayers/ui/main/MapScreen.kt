@@ -22,11 +22,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat.getString
 import com.example.custommaplayers.R
+import com.example.custommaplayers.data.DataProvider
 import com.example.custommaplayers.ui.composables.CustomButton
 import com.example.custommaplayers.ui.composables.ServerFileSelectDialog
 import com.google.android.gms.maps.GoogleMap
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -34,7 +37,7 @@ fun MapScreen(
     context: Context,
     getFromServer: (String) -> Unit,
     getFromJSONFile: () -> Unit,
-    getObjectList: () -> List<String>,
+    dataProvider: DataProvider, // Changed name to avoid confusion
     onMapReady: (GoogleMap) -> Unit
 ) {
     val mapView = rememberMapViewLifecycle()
@@ -62,13 +65,19 @@ fun MapScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            val objectsList by remember { mutableStateOf(getObjectList()) }
+            var objectsList by remember { mutableStateOf(emptyList<String>()) }
             var needDialog by remember { mutableStateOf(false) }
 
             CustomButton(
                 modifier = Modifier.weight(1f),
                 text = getString(context, R.string.get_from_server)
             ) {
+                getObjectsListFromServer(dataProvider) { newObjectsList ->
+                    objectsList = newObjectsList
+                    for (obg in objectsList) {
+                        Log.d("working", "aa $obg")
+                    }
+                }
                 needDialog = true
             }
 
@@ -86,12 +95,19 @@ fun MapScreen(
                     title = getString(context, R.string.cords_available),
                     availableFilesList = objectsList,
                     onDismissRequest = { needDialog = false }
-                ) {
-                    Log.d("working", "$it selected")
+                ) { selectedObject ->
+                    getFromServer(selectedObject) // Update data with selected object
                     needDialog = false
-                    getFromServer(it)
                 }
             }
         }
+    }
+}
+
+@OptIn(DelicateCoroutinesApi::class)
+fun getObjectsListFromServer(dataProvider: DataProvider, callback: (List<String>) -> Unit) {
+    GlobalScope.launch(Dispatchers.Main) {
+        val objectsList = dataProvider.getObjectListFromServer()
+        callback(objectsList)
     }
 }

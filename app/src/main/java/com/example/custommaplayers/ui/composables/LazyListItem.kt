@@ -27,7 +27,7 @@ fun ListItem(
         modifier = Modifier
             .padding(4.dp)
             .fillMaxWidth()
-            .height(40.dp),
+            .height(50.dp),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
         onClick = onClick
     ) {
