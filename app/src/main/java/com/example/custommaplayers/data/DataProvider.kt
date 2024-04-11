@@ -5,14 +5,14 @@ import android.net.Uri
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
 
 class DataProvider {
      fun getFromServer(
@@ -66,26 +66,6 @@ class DataProvider {
             }
     }
 
-    fun getJSONFromRawResource(context: Context, resourceId: Int): JSONObject {
-        val inputStream: InputStream = context.resources.openRawResource(resourceId)
-        val reader = BufferedReader(InputStreamReader(inputStream))
-        val stringBuilder = StringBuilder()
-
-        try {
-            var line = reader.readLine()
-            while (line != null) {
-                stringBuilder.append(line).append('\n')
-                line = reader.readLine()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            reader.close()
-        }
-
-        return JSONObject(stringBuilder.toString())
-    }
-
     fun getJSONFromUri(context: Context, uri: Uri): JSONObject {
         val inputStream = context.contentResolver.openInputStream(uri)
         val json = inputStream?.bufferedReader().use {
@@ -95,7 +75,15 @@ class DataProvider {
         return JSONObject(json!!)
     }
 
-    suspend fun getObjectListFromServer(): List<String> = withContext(Dispatchers.IO) {
+    @OptIn(DelicateCoroutinesApi::class)
+    fun getObjectsListFromServer(callback: (List<String>) -> Unit) {
+        GlobalScope.launch(Dispatchers.Main) {
+            val objectsList = getObjectListFromServer()
+            callback(objectsList)
+        }
+    }
+
+    private suspend fun getObjectListFromServer(): List<String> = withContext(Dispatchers.IO) {
         val db = Firebase.firestore
         val collectionRef = db.collection("geofiles").get().await()
         val objects = mutableListOf<String>()

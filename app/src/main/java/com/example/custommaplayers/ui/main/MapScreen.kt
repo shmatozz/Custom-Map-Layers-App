@@ -27,9 +27,7 @@ import com.example.custommaplayers.ui.composables.CustomButton
 import com.example.custommaplayers.ui.composables.ServerFileSelectDialog
 import com.google.android.gms.maps.GoogleMap
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -73,7 +71,7 @@ fun MapScreen(
                 modifier = Modifier.weight(1f),
                 text = getString(context, R.string.get_from_server)
             ) {
-                getObjectsListFromServer(dataProvider) { newObjectsList ->
+                dataProvider.getObjectsListFromServer { newObjectsList ->
                     objectsList = newObjectsList
                     for (obg in objectsList) {
                         Log.d("working", "aa $obg")
@@ -102,13 +100,5 @@ fun MapScreen(
                 }
             }
         }
-    }
-}
-
-@OptIn(DelicateCoroutinesApi::class)
-fun getObjectsListFromServer(dataProvider: DataProvider, callback: (List<String>) -> Unit) {
-    GlobalScope.launch(Dispatchers.Main) {
-        val objectsList = dataProvider.getObjectListFromServer()
-        callback(objectsList)
     }
 }
