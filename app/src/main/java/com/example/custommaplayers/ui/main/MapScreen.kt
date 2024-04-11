@@ -46,6 +46,7 @@ fun MapScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
+            .padding(bottom = 15.dp)
     ) {
         AndroidView(
             { mapView },

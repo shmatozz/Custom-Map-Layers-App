@@ -2,6 +2,7 @@ package com.example.testcomposemaps.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -19,7 +20,7 @@ import com.example.custommaplayers.ui.theme.RoundedShapes
 import com.example.custommaplayers.ui.theme.Typography
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
+    primary = Color.White,
     secondary = PurpleGrey80,
     tertiary = Pink80,
     background = Color(0xFFFFFBFE),
@@ -32,7 +33,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = Color.White,
     secondary = PurpleGrey40,
     tertiary = Pink40,
     background = Color(0xFFFFFBFE),
@@ -64,7 +65,7 @@ fun CustomMapLayersTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }

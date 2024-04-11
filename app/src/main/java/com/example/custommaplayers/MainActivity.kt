@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.core.view.WindowCompat
 import com.example.custommaplayers.data.DataProvider
 import com.example.custommaplayers.ui.main.MapScreen
 import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
@@ -31,6 +32,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             var objectsList by remember { mutableStateOf(emptyList<String>()) }
