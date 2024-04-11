@@ -37,7 +37,7 @@ fun MapScreen(
     context: Context,
     getFromServer: (String) -> Unit,
     getFromJSONFile: () -> Unit,
-    dataProvider: DataProvider, // Changed name to avoid confusion
+    dataProvider: DataProvider,
     onMapReady: (GoogleMap) -> Unit
 ) {
     val mapView = rememberMapViewLifecycle()
@@ -97,7 +97,7 @@ fun MapScreen(
                     availableFilesList = objectsList,
                     onDismissRequest = { needDialog = false }
                 ) { selectedObject ->
-                    getFromServer(selectedObject) // Update data with selected object
+                    getFromServer(selectedObject)
                     needDialog = false
                 }
             }

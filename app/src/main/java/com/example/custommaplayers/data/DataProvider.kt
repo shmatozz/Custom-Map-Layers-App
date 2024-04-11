@@ -1,6 +1,7 @@
 package com.example.custommaplayers.data
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -83,6 +84,15 @@ class DataProvider {
         }
 
         return JSONObject(stringBuilder.toString())
+    }
+
+    fun getJSONFromUri(context: Context, uri: Uri): JSONObject {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val json = inputStream?.bufferedReader().use {
+            it?.readText()
+        }
+        inputStream?.close()
+        return JSONObject(json!!)
     }
 
     suspend fun getObjectListFromServer(): List<String> = withContext(Dispatchers.IO) {

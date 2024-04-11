@@ -1,13 +1,14 @@
 package com.example.custommaplayers
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.WindowCompat
 import com.example.custommaplayers.data.DataProvider
 import com.example.custommaplayers.ui.main.MapScreen
@@ -17,10 +18,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.data.geojson.GeoJsonLayer
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 
@@ -30,19 +27,30 @@ class MainActivity : ComponentActivity() {
     private lateinit var currentLayerDisplayed: GeoJsonLayer
     private val dataProvider = DataProvider()
 
+    private val pickFileLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.data?.let { uri ->
+                    val fileName = getFileName(uri)
+                    if (fileName != null) {
+                        val geoJSON = dataProvider.getJSONFromUri(applicationContext, uri)
+                        putLayerOnMap(geoJSON)
+                    }
+                }
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            var objectsList by remember { mutableStateOf(emptyList<String>()) }
-
             CustomMapLayersTheme {
                 MapScreen(
                     context = applicationContext,
                     getFromServer = { getFromServer(it) },
-                    getFromJSONFile = { getFromJSONFile() },
+                    getFromJSONFile = { chooseFile() },
                     dataProvider = dataProvider,
                 ) {
                     map = it
@@ -52,17 +60,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun getFromJSONFile() {
-        val geoJSON = dataProvider.getJSONFromRawResource(applicationContext, R.raw.hse_cords)
-
-        putLayerOnMap(geoJSON)
+    private fun chooseFile() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "application/json"
+            addCategory(Intent.CATEGORY_OPENABLE)
+        }
+        pickFileLauncher.launch(intent)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private fun getObjectsListFromServer(callback: (List<String>) -> Unit) {
-        GlobalScope.launch(Dispatchers.Main) {
-            val objectsList = dataProvider.getObjectListFromServer()
-            callback(objectsList)
+    private fun getFileName(uri: Uri): String? {
+        return contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            cursor.moveToFirst()
+            cursor.getString(nameIndex)
         }
     }
 
