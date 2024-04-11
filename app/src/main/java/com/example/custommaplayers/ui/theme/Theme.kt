@@ -2,7 +2,6 @@ package com.example.testcomposemaps.ui.theme
 
 import android.app.Activity
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -16,14 +15,18 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.example.custommaplayers.ui.theme.Pink40
+import com.example.custommaplayers.ui.theme.Pink80
+import com.example.custommaplayers.ui.theme.PurpleGrey40
+import com.example.custommaplayers.ui.theme.PurpleGrey80
 import com.example.custommaplayers.ui.theme.RoundedShapes
 import com.example.custommaplayers.ui.theme.Typography
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color.White,
+    primary = Pink80,
     secondary = PurpleGrey80,
     tertiary = Pink80,
-    background = Color(0xFFFFFBFE),
+    background = Color.White,
     surface = Color(0xFFD1D1D1),
     onPrimary = Color.White,
     onSecondary = Color.White,
@@ -33,10 +36,10 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color.White,
+    primary = Pink80,
     secondary = PurpleGrey40,
     tertiary = Pink40,
-    background = Color(0xFFFFFBFE),
+    background = Color.White,
     surface = Color(0xFFE2E2E2),
     onPrimary = Color.White,
     onSecondary = Color.White,

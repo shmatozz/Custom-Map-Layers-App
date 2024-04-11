@@ -1,4 +1,4 @@
-package com.example.testcomposemaps.ui.theme
+package com.example.custommaplayers.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

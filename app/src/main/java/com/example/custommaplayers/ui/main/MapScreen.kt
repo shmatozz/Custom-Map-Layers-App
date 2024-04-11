@@ -80,7 +80,7 @@ fun MapScreen(
                 needDialog = true
             }
 
-            Spacer(modifier = Modifier.weight(0.01f))
+            Spacer(modifier = Modifier.weight(0.04f))
 
             CustomButton(
                 modifier = Modifier.weight(1f),

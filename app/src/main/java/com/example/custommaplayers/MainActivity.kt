@@ -9,6 +9,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
 import com.example.custommaplayers.data.DataProvider
 import com.example.custommaplayers.ui.main.MapScreen
@@ -89,13 +91,18 @@ class MainActivity : ComponentActivity() {
 
         try {
             currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
-            Log.d("working", currentLayerDisplayed.toString())
 
+            currentLayerDisplayed.defaultLineStringStyle.color = Color.Black.toArgb()
+
+            currentLayerDisplayed.defaultPolygonStyle.fillColor = Color(0x64FF0000).toArgb()
+            currentLayerDisplayed.defaultPolygonStyle.strokeColor = Color.Red.toArgb()
+
+            currentLayerDisplayed.addLayerToMap()
+            Log.d("working", currentLayerDisplayed.toString())
         } catch (error: Exception) {
             Log.d("working", error.toString())
         }
-        currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
-        currentLayerDisplayed.addLayerToMap()
+
 
         // zoom map
         if (geoJSONObject.has("properties")) {

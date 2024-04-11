@@ -22,7 +22,7 @@ fun CustomButton(
     Button(
         onClick = onClick,
         modifier = modifier
-            .border(2.dp, Color.Black, MaterialTheme.shapes.medium)
+            .border(1.dp, Color.Black, MaterialTheme.shapes.medium)
             .height(60.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
