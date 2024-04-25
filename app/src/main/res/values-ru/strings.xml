@@ -4,4 +4,6 @@
     <string name="from_file">Получить из файла</string>
     <string name="get_from_server">Загрузить с сервера</string>
     <string name="cords_available">Сейчас доступно на сервере</string>
+    <string name="file_error">Ошибка при загрузке файла</string>
+    <string name="check_and_retry">Пожалуйста, проверьте файл и повторите попытку.</string>
 </resources>

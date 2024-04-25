@@ -3,4 +3,6 @@
     <string name="from_file">Draw from file</string>
     <string name="get_from_server">Get from server</string>
     <string name="cords_available">Now available on server</string>
+    <string name="file_error">Error uploading file</string>
+    <string name="check_and_retry">Please check the file and try again.</string>
 </resources>
