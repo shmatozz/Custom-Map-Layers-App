@@ -1,6 +1,7 @@
 package com.example.custommaplayers
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.data.geojson.GeoJsonLayer
+import org.json.JSONException
 import org.json.JSONObject
 
 
@@ -28,19 +30,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var map: GoogleMap
     private lateinit var currentLayerDisplayed: GeoJsonLayer
     private val dataProvider = DataProvider()
-
-    private val pickFileLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                result.data?.data?.let { uri ->
-                    val fileName = getFileName(uri)
-                    if (fileName != null) {
-                        val geoJSON = dataProvider.getJSONFromUri(applicationContext, uri)
-                        putLayerOnMap(geoJSON)
-                    }
-                }
-            }
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +59,24 @@ class MainActivity : ComponentActivity() {
         pickFileLauncher.launch(intent)
     }
 
+    private val pickFileLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.data?.let { uri ->
+                    val fileName = getFileName(uri)
+                    if (fileName != null) {
+                        try {
+                            val geoJSON = dataProvider.getJSONFromUri(applicationContext, uri)
+                            putLayerOnMap(geoJSON)
+                        } catch (e: JSONException) {
+                            showLoadErrorDialog()
+                            Log.d("working", "invalid file loaded")
+                        }
+                    }
+                }
+            }
+        }
+
     private fun getFileName(uri: Uri): String? {
         return contentResolver.query(uri, null, null, null, null)?.use { cursor ->
             val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
@@ -80,7 +87,12 @@ class MainActivity : ComponentActivity() {
 
     private fun getFromServer(objectID: String) {
         dataProvider.getFromServer(objectID) {
-            putLayerOnMap(it)
+            try {
+                putLayerOnMap(it)
+            } catch (e: JSONException) {
+                showLoadErrorDialog()
+                Log.d("working", "invalid file loaded")
+            }
         }
     }
 
@@ -120,5 +132,15 @@ class MainActivity : ComponentActivity() {
                 map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
             }
         }
+    }
+
+    private fun showLoadErrorDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.file_error)
+            .setMessage(R.string.check_and_retry)
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 }
