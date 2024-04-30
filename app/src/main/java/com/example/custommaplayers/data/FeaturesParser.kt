@@ -22,7 +22,7 @@ class FeaturesParser {
             for (i in parts.indices step 2) {
                 val x = parts[i].toDouble()
                 val y = parts[i + 1].toDouble()
-                coordinates.add(listOf(y, x))
+                coordinates.add(listOf(x, y))
             }
 
             /* Check geometry type, if "Polygon" -> add one more array layer */

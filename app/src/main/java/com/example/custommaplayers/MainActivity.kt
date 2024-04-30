@@ -23,7 +23,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.maps.android.data.geojson.GeoJsonLayer
+import com.google.android.gms.maps.model.PolygonOptions
+import com.google.android.gms.maps.model.PolylineOptions
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -31,7 +33,6 @@ import org.json.JSONObject
 class MainActivity : ComponentActivity() {
 
     private lateinit var map: GoogleMap
-    private lateinit var currentLayerDisplayed: GeoJsonLayer
     private val dataProvider = DataProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,63 +121,58 @@ class MainActivity : ComponentActivity() {
                                 val header = properties.getString("header")
                                 val body = properties.getString("body")
 
-                                Log.d("working", argbToHue(color).toString())
-
                                 val markerOptions = MarkerOptions()
                                     .position(LatLng(coordinates.getDouble(0), coordinates.getDouble(1)))
                                     .title(header)
                                     .snippet(body)
-                                    .icon(BitmapDescriptorFactory.defaultMarker(argbToHue(color)))
+                                    .icon(BitmapDescriptorFactory.defaultMarker(rgbToHue(color)))
 
                                 map.addMarker(markerOptions)
                             }
                             "LineString" -> {
-                                currentLayerDisplayed = GeoJsonLayer(map, feature)
-                                currentLayerDisplayed.defaultLineStringStyle.color = Color.Red.toArgb()
-                                currentLayerDisplayed.addLayerToMap()
+                                val coordinates = geometry.getJSONArray("coordinates")
+                                val points = ArrayList<LatLng>()
+                                for (j in 0 until coordinates.length()) {
+                                    val coords = coordinates.getJSONArray(j)
+                                    val latLng = LatLng(coords.getDouble(0), coords.getDouble(1))
+                                    points.add(latLng)
+                                }
+                                map.addPolyline(PolylineOptions().addAll(points).color(Color.Red.toArgb()))
                             }
                             "Polygon" -> {
-                                currentLayerDisplayed = GeoJsonLayer(map, feature)
-                                currentLayerDisplayed.defaultPolygonStyle.fillColor = Color(0x64FF0000).toArgb()
-                                currentLayerDisplayed.defaultPolygonStyle.strokeColor = Color.Red.toArgb()
-                                currentLayerDisplayed.addLayerToMap()
+                                val coordinates = geometry.getJSONArray("coordinates").get(0) as JSONArray
+                                val points = ArrayList<LatLng>()
+                                for (j in 0 until coordinates.length()) {
+                                    val coords = coordinates.getJSONArray(j)
+                                    val latLng = LatLng(coords.getDouble(0), coords.getDouble(1))
+                                    points.add(latLng)
+                                }
+                                map.addPolygon(PolygonOptions().addAll(points).fillColor(Color(0x64FF0000).toArgb()).strokeColor(Color.Red.toArgb()))
                             }
                         }
                     }
                 }
-            } else {
-                currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
-
-                currentLayerDisplayed.defaultLineStringStyle.color = Color.Red.toArgb()
-                currentLayerDisplayed.defaultPolygonStyle.fillColor = Color(0x64FF0000).toArgb()
-                currentLayerDisplayed.defaultPolygonStyle.strokeColor = Color.Red.toArgb()
-
-                currentLayerDisplayed.addLayerToMap()
             }
         } catch (error: Exception) {
             Log.d("working", error.toString())
         }
 
+        /* Zoom map by Bounding Box */
+        if (geoJSONObject.has("bbox")) {
+            val bboxArray = geoJSONObject.getJSONArray("bbox")
 
-        // zoom map
-        if (geoJSONObject.has("properties")) {
-            val properties = geoJSONObject.getJSONObject("properties")
-            if (properties.has("bbox")) {
-                val bboxArray = properties.getJSONArray("bbox")
+            val south = bboxArray.getDouble(0)
+            val west = bboxArray.getDouble(1)
+            val north = bboxArray.getDouble(2)
+            val east = bboxArray.getDouble(3)
 
-                val west = bboxArray.getDouble(0)
-                val south = bboxArray.getDouble(1)
-                val east = bboxArray.getDouble(2)
-                val north = bboxArray.getDouble(3)
+            val bounds = LatLngBounds(LatLng(south, west), LatLng(north, east))
 
-                val bounds = LatLngBounds(LatLng(south, west), LatLng(north, east))
-
-                map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
-            }
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
         }
     }
 
-    private fun argbToHue(rgbColorString: String): Float {
+    private fun rgbToHue(rgbColorString: String): Float {
         if (rgbColorString.isEmpty()) {
             return 0.0f
         }
