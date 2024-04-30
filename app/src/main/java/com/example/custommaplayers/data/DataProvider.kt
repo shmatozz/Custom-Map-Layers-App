@@ -11,10 +11,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
 import org.json.JSONObject
 
 class DataProvider {
+    private val parser = FeaturesParser()
+
      fun getFromServer(
          objectID: String,
          putLayerOnMap: (JSONObject) -> Unit
@@ -31,25 +32,14 @@ class DataProvider {
                         /* Get data */
                         val data = JSONObject(document.data!!)
 
-                        /* Parse coordinates from string to array */
-                        val coordinates = mutableListOf<List<Double>>()
-                        val parts = data.getJSONObject("geometry").getString("coordinates").split(",")
-                        for (i in parts.indices step 2) {
-                            val x = parts[i].toDouble()
-                            val y = parts[i + 1].toDouble()
-                            coordinates.add(listOf(y, x))
-                        }
-
-                        /* Check geometry type, if "Polygon" -> add one more array layer */
-                        if (data.getJSONObject("geometry").getString("type") == "Polygon") {
-                            data.getJSONObject("geometry").put("coordinates", JSONArray(mutableListOf(coordinates)))
-                        } else {
-                            data.getJSONObject("geometry").put("coordinates", JSONArray(coordinates))
+                        if (data.getString("type") == "FeatureCollection") {
+                            geoJSONObject = parser.parseFeatureCollection(data)
+                        } else if (data.getString("type") == "Feature") {
+                            geoJSONObject = parser.parseFeature(data)
                         }
 
                         /* Save data */
                         Log.d("working", "data $data")
-                        geoJSONObject = data
                     } else {
                         Log.d("working", "Document data is null")
                     }
