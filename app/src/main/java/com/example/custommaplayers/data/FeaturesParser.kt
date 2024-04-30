@@ -31,12 +31,6 @@ class FeaturesParser {
             } else {
                 data.getJSONObject("geometry").put("coordinates", JSONArray(coordinates))
             }
-        } else {
-            /* Switch coordinates */
-            val coordinates = data.getJSONObject("geometry").getJSONArray("coordinates")
-            val temp = coordinates.getDouble(0)
-            coordinates.put(0, coordinates.getDouble(1))
-            coordinates.put(1, temp)
         }
 
         return data
