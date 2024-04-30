@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.graphics.Color
+import android.graphics.Color as AndroidColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
 import com.example.custommaplayers.data.DataProvider
@@ -18,8 +19,10 @@ import com.example.custommaplayers.ui.main.MapScreen
 import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.data.geojson.GeoJsonLayer
 import org.json.JSONException
 import org.json.JSONObject
@@ -102,15 +105,54 @@ class MainActivity : ComponentActivity() {
         Log.d("working", "putLayerOnMap $geoJSONObject")
 
         try {
-            currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
+            if (geoJSONObject.has("features")) {
+                val features = geoJSONObject.getJSONArray("features")
+                for (i in 0 until features.length()) {
+                    val feature = features.getJSONObject(i)
+                    if (feature.has("geometry")) {
+                        val geometry = feature.getJSONObject("geometry")
+                        when (geometry.getString("type")) {
+                            "Point" -> {
+                                val coordinates = geometry.getJSONArray("coordinates")
+                                val properties = feature.getJSONObject("properties")
+                                val color = properties.getString("color")
+                                val hint = properties.getString("hint")
+                                val header = properties.getString("header")
+                                val body = properties.getString("body")
 
-            currentLayerDisplayed.defaultLineStringStyle.color = Color.Black.toArgb()
+                                Log.d("working", argbToHue(color).toString())
 
-            currentLayerDisplayed.defaultPolygonStyle.fillColor = Color(0x64FF0000).toArgb()
-            currentLayerDisplayed.defaultPolygonStyle.strokeColor = Color.Red.toArgb()
+                                val markerOptions = MarkerOptions()
+                                    .position(LatLng(coordinates.getDouble(0), coordinates.getDouble(1)))
+                                    .title(header)
+                                    .snippet(body)
+                                    .icon(BitmapDescriptorFactory.defaultMarker(argbToHue(color)))
 
-            currentLayerDisplayed.addLayerToMap()
-            Log.d("working", currentLayerDisplayed.toString())
+                                map.addMarker(markerOptions)
+                            }
+                            "LineString" -> {
+                                currentLayerDisplayed = GeoJsonLayer(map, feature)
+                                currentLayerDisplayed.defaultLineStringStyle.color = Color.Red.toArgb()
+                                currentLayerDisplayed.addLayerToMap()
+                            }
+                            "Polygon" -> {
+                                currentLayerDisplayed = GeoJsonLayer(map, feature)
+                                currentLayerDisplayed.defaultPolygonStyle.fillColor = Color(0x64FF0000).toArgb()
+                                currentLayerDisplayed.defaultPolygonStyle.strokeColor = Color.Red.toArgb()
+                                currentLayerDisplayed.addLayerToMap()
+                            }
+                        }
+                    }
+                }
+            } else {
+                currentLayerDisplayed = GeoJsonLayer(map, geoJSONObject)
+
+                currentLayerDisplayed.defaultLineStringStyle.color = Color.Red.toArgb()
+                currentLayerDisplayed.defaultPolygonStyle.fillColor = Color(0x64FF0000).toArgb()
+                currentLayerDisplayed.defaultPolygonStyle.strokeColor = Color.Red.toArgb()
+
+                currentLayerDisplayed.addLayerToMap()
+            }
         } catch (error: Exception) {
             Log.d("working", error.toString())
         }
@@ -132,6 +174,19 @@ class MainActivity : ComponentActivity() {
                 map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
             }
         }
+    }
+
+    private fun argbToHue(rgbColorString: String): Float {
+        if (rgbColorString.isEmpty()) {
+            return 0.0f
+        }
+
+        val color = AndroidColor.parseColor(rgbColorString)
+
+        val hsv = FloatArray(3)
+        AndroidColor.RGBToHSV(AndroidColor.red(color), AndroidColor.green(color), AndroidColor.blue(color), hsv)
+
+        return hsv[0]
     }
 
     private fun showLoadErrorDialog() {
