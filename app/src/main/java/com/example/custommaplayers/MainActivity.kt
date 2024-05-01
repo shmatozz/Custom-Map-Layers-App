@@ -11,7 +11,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.graphics.Color
-import android.graphics.Color as AndroidColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
 import com.example.custommaplayers.data.DataProvider
@@ -26,8 +25,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolygonOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
+import android.graphics.Color as AndroidColor
 
 
 class MainActivity : ComponentActivity() {
@@ -72,9 +71,9 @@ class MainActivity : ComponentActivity() {
                         try {
                             val geoJSON = dataProvider.getJSONFromUri(applicationContext, uri)
                             putLayerOnMap(geoJSON)
-                        } catch (e: JSONException) {
+                        } catch (e: Exception) {
                             showLoadErrorDialog()
-                            Log.d("working", "invalid file loaded")
+                            Log.d("working", e.toString())
                         }
                     }
                 }
@@ -91,12 +90,7 @@ class MainActivity : ComponentActivity() {
 
     private fun getFromServer(objectID: String) {
         dataProvider.getFromServer(objectID) {
-            try {
-                putLayerOnMap(it)
-            } catch (e: JSONException) {
-                showLoadErrorDialog()
-                Log.d("working", "invalid file loaded")
-            }
+            putLayerOnMap(it)
         }
     }
 
@@ -152,23 +146,23 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                /* Zoom map by Bounding Box */
+                if (geoJSONObject.has("bbox")) {
+                    val bboxArray = geoJSONObject.getJSONArray("bbox")
+
+                    val south = bboxArray.getDouble(0)
+                    val west = bboxArray.getDouble(1)
+                    val north = bboxArray.getDouble(2)
+                    val east = bboxArray.getDouble(3)
+
+                    val bounds = LatLngBounds(LatLng(south, west), LatLng(north, east))
+
+                    map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+                }
             }
         } catch (error: Exception) {
             Log.d("working", error.toString())
-        }
-
-        /* Zoom map by Bounding Box */
-        if (geoJSONObject.has("bbox")) {
-            val bboxArray = geoJSONObject.getJSONArray("bbox")
-
-            val south = bboxArray.getDouble(0)
-            val west = bboxArray.getDouble(1)
-            val north = bboxArray.getDouble(2)
-            val east = bboxArray.getDouble(3)
-
-            val bounds = LatLngBounds(LatLng(south, west), LatLng(north, east))
-
-            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+            showLoadErrorDialog()
         }
     }
 

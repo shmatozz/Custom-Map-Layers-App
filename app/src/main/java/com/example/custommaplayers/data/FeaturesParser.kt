@@ -35,4 +35,12 @@ class FeaturesParser {
 
         return data
     }
+
+    fun parseFromString(data: String?): JSONObject {
+        if (data.isNullOrEmpty()) {
+            throw Exception()
+        }
+
+        return JSONObject(data)
+    }
 }

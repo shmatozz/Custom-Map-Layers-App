@@ -62,7 +62,7 @@ class DataProvider {
             it?.readText()
         }
         inputStream?.close()
-        return JSONObject(json!!)
+        return parser.parseFromString(json)
     }
 
     @OptIn(DelicateCoroutinesApi::class)
