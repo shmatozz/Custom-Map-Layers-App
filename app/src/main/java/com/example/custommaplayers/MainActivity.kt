@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
 import com.example.custommaplayers.data.DataProvider
 import com.example.custommaplayers.ui.main.MapScreen
+import com.example.custommaplayers.ui.theme.rgbToHue
 import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -26,7 +27,6 @@ import com.google.android.gms.maps.model.PolygonOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import org.json.JSONArray
 import org.json.JSONObject
-import android.graphics.Color as AndroidColor
 
 
 class MainActivity : ComponentActivity() {
@@ -164,19 +164,6 @@ class MainActivity : ComponentActivity() {
             Log.d("working", error.toString())
             showLoadErrorDialog()
         }
-    }
-
-    private fun rgbToHue(rgbColorString: String): Float {
-        if (rgbColorString.isEmpty()) {
-            return 0.0f
-        }
-
-        val color = AndroidColor.parseColor(rgbColorString)
-
-        val hsv = FloatArray(3)
-        AndroidColor.RGBToHSV(AndroidColor.red(color), AndroidColor.green(color), AndroidColor.blue(color), hsv)
-
-        return hsv[0]
     }
 
     private fun showLoadErrorDialog() {
