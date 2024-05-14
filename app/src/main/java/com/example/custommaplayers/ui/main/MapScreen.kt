@@ -1,7 +1,6 @@
 package com.example.custommaplayers.ui.main
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,20 +11,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat.getString
 import com.example.custommaplayers.R
-import com.example.custommaplayers.data.DataProvider
 import com.example.custommaplayers.ui.composables.CustomButton
 import com.example.custommaplayers.ui.composables.ServerFileSelectDialog
-import com.google.android.gms.maps.GoogleMap
+import com.example.custommaplayers.viewmodel.MapViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,10 +27,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun MapScreen(
     context: Context,
-    getFromServer: (String) -> Unit,
-    getFromJSONFile: () -> Unit,
-    dataProvider: DataProvider,
-    onMapReady: (GoogleMap) -> Unit
+    mapViewModel: MapViewModel,
+    getFromJSONFile: () -> Unit
 ) {
     val mapView = rememberMapViewLifecycle()
 
@@ -52,7 +44,8 @@ fun MapScreen(
         ) {
             CoroutineScope(Dispatchers.Main).launch {
                 mapView.getMapAsync {
-                    onMapReady(it)
+                    mapViewModel.map = it
+                    mapViewModel.map.uiSettings.isZoomControlsEnabled = true
                 }
             }
         }
@@ -64,20 +57,12 @@ fun MapScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            var objectsList by remember { mutableStateOf(emptyList<String>()) }
-            var needDialog by remember { mutableStateOf(false) }
-
             CustomButton(
                 modifier = Modifier.weight(1f),
                 text = getString(context, R.string.get_from_server)
             ) {
-                dataProvider.getObjectsListFromServer { newObjectsList ->
-                    objectsList = newObjectsList
-                    for (obg in objectsList) {
-                        Log.d("working", "aa $obg")
-                    }
-                }
-                needDialog = true
+                mapViewModel.loadObjects()
+                mapViewModel.showServerFilesDialog = true
             }
 
             Spacer(modifier = Modifier.weight(0.04f))
@@ -89,14 +74,14 @@ fun MapScreen(
                 getFromJSONFile()
             }
 
-            if (needDialog) {
+            if (mapViewModel.showServerFilesDialog) {
                 ServerFileSelectDialog(
                     title = getString(context, R.string.cords_available),
-                    availableFilesList = objectsList,
-                    onDismissRequest = { needDialog = false }
+                    availableFilesList = mapViewModel.objectsList,
+                    onDismissRequest = { mapViewModel.showServerFilesDialog = false }
                 ) { selectedObject ->
-                    getFromServer(selectedObject)
-                    needDialog = false
+                    mapViewModel.getFromServer(selectedObject)
+                    mapViewModel.showServerFilesDialog = false
                 }
             }
         }
