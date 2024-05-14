@@ -77,7 +77,7 @@ fun MapScreen(
             if (mapViewModel.showServerFilesDialog) {
                 ServerFileSelectDialog(
                     title = getString(context, R.string.cords_available),
-                    availableFilesList = mapViewModel.objectsList,
+                    viewModel = mapViewModel,
                     onDismissRequest = { mapViewModel.showServerFilesDialog = false }
                 ) { selectedObject ->
                     mapViewModel.getFromServer(selectedObject)

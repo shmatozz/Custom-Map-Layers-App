@@ -7,7 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.custommaplayers.data.DataProvider
+import com.example.custommaplayers.model.ObjectsState
 import com.example.custommaplayers.ui.theme.rgbToHue
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -17,6 +19,7 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolygonOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -25,16 +28,26 @@ class MapViewModel : ViewModel() {
     var showErrorDialog by mutableStateOf(false)
 
     var objectsList by mutableStateOf(emptyList<String>())
+    var objectsState by mutableStateOf(ObjectsState())
 
     val dataProvider = DataProvider()
 
     lateinit var map: GoogleMap
 
     fun loadObjects() {
-        dataProvider.getObjectsListFromServer { newObjectsList ->
-            objectsList = newObjectsList
-            for (obg in objectsList) {
-                Log.d("working", "aa $obg")
+        viewModelScope.launch {
+            objectsState = objectsState.copy(
+                objectsList = null,
+                isLoading = true
+            )
+            dataProvider.getObjectsListFromServer { newObjectsList ->
+                for (obg in newObjectsList) {
+                    Log.d("working", "aa $obg")
+                }
+                objectsState = objectsState.copy(
+                    objectsList = newObjectsList,
+                    isLoading = false
+                )
             }
         }
     }
