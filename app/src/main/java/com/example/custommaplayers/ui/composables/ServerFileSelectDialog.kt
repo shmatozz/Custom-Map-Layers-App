@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,15 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
+import com.example.custommaplayers.viewmodel.MapViewModel
 
 @Composable
 fun ServerFileSelectDialog(
     title: String,
-    availableFilesList: List<String>,
+    viewModel: MapViewModel,
     onDismissRequest: () -> Unit,
     onFileSelected: (String) -> Unit
 ) {
@@ -57,14 +57,20 @@ fun ServerFileSelectDialog(
                     style = MaterialTheme.typography.bodyLarge
                 )
 
+                val objectsState = viewModel.objectsState
+                if (objectsState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.padding(top = 10.dp),
+                        color = Color.Black
+                    )
+                }
+
                 LazyColumn(
                     modifier = Modifier
                         .weight(0.9f)
                         .fillMaxSize()
                 ) {
-                    items(
-                        items = availableFilesList,
-                    ) {
+                    items(items = objectsState.objectsList?.toList() ?: listOf()) {
                         ListItem(text = it) {
                             onFileSelected(it)
                         }
@@ -72,18 +78,5 @@ fun ServerFileSelectDialog(
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun ServerFileSelectDialogPreview() {
-    CustomMapLayersTheme {
-        ServerFileSelectDialog(
-            title = "Now available on server",
-            availableFilesList = listOf("Rodionova", "Lvovskay", "BP"),
-            onDismissRequest = { },
-            onFileSelected = { }
-        )
     }
 }
