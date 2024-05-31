@@ -9,9 +9,9 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.core.view.WindowCompat
 import com.example.custommaplayers.ui.main.MapScreen
 import com.example.custommaplayers.viewmodel.MapViewModel
 import com.example.testcomposemaps.ui.theme.CustomMapLayersTheme
@@ -22,9 +22,8 @@ class MainActivity : ComponentActivity() {
     private val mapViewModel: MapViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             CustomMapLayersTheme {
