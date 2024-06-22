@@ -80,7 +80,7 @@ class MapViewModel : ViewModel() {
                                 val body = properties.getString("body")
 
                                 val markerOptions = MarkerOptions()
-                                    .position(LatLng(coordinates.getDouble(0), coordinates.getDouble(1)))
+                                    .position(LatLng(coordinates.getDouble(1), coordinates.getDouble(0)))
                                     .title(header)
                                     .snippet(body)
                                     .icon(BitmapDescriptorFactory.defaultMarker(rgbToHue(color)))
@@ -92,7 +92,7 @@ class MapViewModel : ViewModel() {
                                 val points = ArrayList<LatLng>()
                                 for (j in 0 until coordinates.length()) {
                                     val coords = coordinates.getJSONArray(j)
-                                    val latLng = LatLng(coords.getDouble(0), coords.getDouble(1))
+                                    val latLng = LatLng(coords.getDouble(1), coords.getDouble(0))
                                     points.add(latLng)
                                 }
                                 map.addPolyline(PolylineOptions().addAll(points).color(Color.Red.toArgb()))
@@ -102,7 +102,7 @@ class MapViewModel : ViewModel() {
                                 val points = ArrayList<LatLng>()
                                 for (j in 0 until coordinates.length()) {
                                     val coords = coordinates.getJSONArray(j)
-                                    val latLng = LatLng(coords.getDouble(0), coords.getDouble(1))
+                                    val latLng = LatLng(coords.getDouble(1), coords.getDouble(0))
                                     points.add(latLng)
                                 }
                                 map.addPolygon(
